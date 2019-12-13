@@ -31,5 +31,5 @@ def prepare_repos(tmpdir_factory):
     _hg_create_randomrepo(local, 5)
     subprocess.check_call([EXE_HG(), "clone", "--cwd", patched, local, "."])
     patch = subprocess.check_output([EXE_HG(), "export", "--cwd", local, "-r", "head()"])
-    subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()"])
+    subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()", "--config", "extensions.strip="])
     return (local, patched, patch)
