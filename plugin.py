@@ -4,9 +4,7 @@ import os
 import subprocess
 from constants import EXE_HG
 from phabricator import Phabricator
-from tempfile import mkstemp
 from constants import ENVVAR_PHAB_DIFF
-from logger import log
 
 
 def phabricator_factory():  #pragma: no cover
