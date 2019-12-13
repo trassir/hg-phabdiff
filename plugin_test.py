@@ -32,7 +32,7 @@ def test_apply_phab_diff(mocker, prepare_repos):
     os.environ[ENVVAR_PHAB_DIFF()] = "test"
     plugin.apply_phab_diff(local)
     subprocess.check_call([EXE_HG(), "out", "--cwd", local, patched])
-    subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()"])
+    subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()", "--config", "extensions.strip="])
     with pytest.raises(subprocess.CalledProcessError) as excinfo:
         subprocess.check_call([EXE_HG(), "out", "--cwd", local, patched])
     assert excinfo.value.returncode == 1
