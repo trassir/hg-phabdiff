@@ -14,6 +14,16 @@ def phabricator_factory():  #pragma: no cover
 def apply_phab_diff(repo_root):
     if ENVVAR_PHAB_DIFF() not in os.environ:
         return
+    def has_uncommitted():
+        return bool(subprocess.check_output(
+            [
+                EXE_HG(), 'status',
+                '--cwd', repo_root,
+                '--no-status', '--modified', '--added', '--removed', '--deleted'
+            ]
+        ))
+    if has_uncommitted():
+        raise RuntimeError('Uncommitted changes')
     p = phabricator_factory()
     p.update_interfaces()
     diff_id=os.environ[ENVVAR_PHAB_DIFF()]

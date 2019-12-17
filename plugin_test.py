@@ -24,6 +24,39 @@ class PhabricatorMock:
         self.differential = self.DifferentialMock(diff=diff)
 
 
+def test_apply_with_uncommitted(mocker, prepare_repos):
+    (local, patched, patch) = prepare_repos
+    def current_commit():
+        return subprocess.check_output([EXE_HG(), "--cwd", local, 'log', '-T', '{node}', '-r', '.'])
+    def count_commits():
+        return len(subprocess.check_output([EXE_HG(), "--cwd", local, 'log', '-T', 'x']))
+    def has_uncommitted():
+        return bool(subprocess.check_output([EXE_HG(), "--cwd", local, 'status',
+            '--no-status', '--modified', '--added', '--removed', '--deleted']))
+
+    assert not has_uncommitted()
+    initial_commits = count_commits()
+    filename = 'file'
+    with open(filename, 'w') as f:
+        f.write('hi\n')
+    subprocess.check_call([EXE_HG(), "--cwd", local, "add", filename])
+    subprocess.check_call([EXE_HG(), "--cwd", local, "commit", "-m", "add %s" % filename, "-u", "testuser"])
+    assert count_commits() == initial_commits+1
+    commit = current_commit()
+
+    with open(filename, 'a') as f:
+        f.write('world\n')
+    assert has_uncommitted()
+
+    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    with pytest.raises(Exception):
+        plugin.apply_phab_diff(local)
+
+    assert has_uncommitted()
+    assert count_commits() == initial_commits+1
+    assert current_commit() == commit
+
+
 def test_apply_phab_diff(mocker, prepare_repos):
     (local, patched, patch) = prepare_repos
     def phabricatormock_factory():
