@@ -27,6 +27,15 @@ def apply_phab_diff(repo_root):
     p = phabricator_factory()
     p.update_interfaces()
     diff_id=os.environ[ENVVAR_PHAB_DIFF()]
+
+    diffs = p.differential.diff.search(constraints=dict(ids=[int(diff_id)])).data
+    assert len(diffs) == 1
+    revs = p.differential.query(phids=[diffs[0]['fields']['revisionPHID']])
+    assert len(revs) == 1
+    depends = revs[0]['auxiliary']['phabricator:depends-on']
+    if depends:
+        raise RuntimeError('The diff has dependencies in stack')
+
     diff_txt = p.differential.getrawdiff(diffID=diff_id).response
     p = subprocess.Popen(
         [
