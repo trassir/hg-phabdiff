@@ -37,14 +37,16 @@ def apply_phab_diff(repo_root):
         raise RuntimeError('The diff has dependencies in stack')
 
     diff_txt = p.differential.getrawdiff(diffID=diff_id).response
-    p = subprocess.Popen(
-        [
-            EXE_HG(), "import",
-            "--cwd", repo_root,
-            "--no-commit", "-"
-        ],
-        stdin=subprocess.PIPE)
-    p.communicate(diff_txt)
+    cmd = [
+        EXE_HG(), "import",
+        "--cwd", repo_root,
+        "--no-commit", "-"
+    ]
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, err = p.communicate(diff_txt)
+    code = p.wait()
+    if code:
+        raise RuntimeError("hg import failed with %d:\n%s" % (code, err))
     subprocess.check_call(
         [
             EXE_HG(), "commit",

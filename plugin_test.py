@@ -135,3 +135,38 @@ def test_apply_stacked_diff(mocker, prepare_repos):
     assert not has_uncommitted()
     assert count_commits() == initial_commits
     assert current_commit() == commit
+
+def test_apply_diff_nonexistant_file(mocker, prepare_repos):
+    (local, patched, patch) = prepare_repos
+    DIFF = '''diff --git a/foo/bar/baz b/foo/bar/baz
+--- a/foo/bar/baz
++++ b/foo/bar/baz
+@@ -1,3 +1,3 @@
+ aaa
+-bbb
++bbbb
+ ccc
+'''
+    def phabricatormock_factory():
+        return PhabricatorMock(diff=DIFF)
+    mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
+
+    def current_commit():
+        return subprocess.check_output([EXE_HG(), "--cwd", local, 'log', '-T', '{node}', '-r', '.'])
+    def count_commits():
+        return len(subprocess.check_output([EXE_HG(), "--cwd", local, 'log', '-T', 'x']))
+    def has_uncommitted():
+        return bool(subprocess.check_output([EXE_HG(), "--cwd", local, 'status',
+            '--no-status', '--modified', '--added', '--removed', '--deleted']))
+
+
+    initial_commits = count_commits()
+    commit = current_commit()
+
+    os.environ[ENVVAR_PHAB_DIFF()] = DiffIds.GENERIC
+    with pytest.raises(RuntimeError, match="unable to find 'foo/bar/baz' for patching"):
+        plugin.apply_phab_diff(local)
+
+    assert not has_uncommitted()
+    assert count_commits() == initial_commits
+    assert current_commit() == commit
