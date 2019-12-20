@@ -14,6 +14,7 @@ def phabricator_factory():  #pragma: no cover
 def apply_phab_diff(repo_root):
     if ENVVAR_PHAB_DIFF() not in os.environ:
         return
+
     def has_uncommitted():
         return bool(subprocess.check_output(
             [
