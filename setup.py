@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.1",
     author="Vladimir Looze",
     author_email="woldemar@mimas.ru",
-    description="Mercurial extention for transparently applying phabricator diffs",
+    description="Mercurial extension for transparently applying phabricator diffs",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/trassir/hg-phabdiff",
