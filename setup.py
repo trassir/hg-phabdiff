@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     python_requires=">=2.7",
     install_requires=[
-        "mercurial (>=5.1)",
-        "phabricator (>=0.7.0)"
+        "mercurial>=5.1",
+        "phabricator>=0.7.0"
         ]
 )
