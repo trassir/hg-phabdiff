@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
 import os
 import subprocess
@@ -8,12 +9,15 @@ from constants import EXE_HG
 
 def _hg_create_randomrepo(root, ncommits):
     def _hg_commit(size):
-        text = open(__file__).read()
-        filedata = (text * (size / len(text) + 1))[:size]
+        text = open(__file__).read().decode("utf-8")
+        filedata = unicode((text * (size / len(text) + 1))[:size])
+        filedata += u'строка на русском'
+        filedata += u'任何字符串在中國'
+        filedata_utf8 = filedata.encode("utf-8")
         md5 = hashlib.md5()
-        md5.update(filedata)
+        md5.update(filedata_utf8)
         filename = os.path.join(md5.hexdigest())
-        open(filename, "wb").write(filedata)
+        open(filename, "wb").write(filedata_utf8)
         subprocess.check_call([EXE_HG(), "add", filename])
         subprocess.check_call([EXE_HG(), "commit", "-m", "add %s" % filename, "-u", "testuser"])
     cd = os.curdir

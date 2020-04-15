@@ -17,7 +17,7 @@ def apply_phab_diff(repo_root):
     p = phabricator_factory()
     p.update_interfaces()
     diff_id=os.environ[ENVVAR_PHAB_DIFF()]
-    diff_txt = p.differential.getrawdiff(diffID=diff_id).response
+    diff_txt = p.differential.getrawdiff(diffID=diff_id).response.decode("utf-8")
     p = subprocess.Popen(
         [
             EXE_HG(), "import",
@@ -25,7 +25,7 @@ def apply_phab_diff(repo_root):
             "--no-commit", "-"
         ],
         stdin=subprocess.PIPE)
-    p.communicate(diff_txt)
+    p.communicate(diff_txt.encode("utf-8"))
     subprocess.check_call(
         [
             EXE_HG(), "commit",
