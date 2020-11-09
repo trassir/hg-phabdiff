@@ -14,4 +14,4 @@ def test_hg_found():
     if sys.platform == 'win32':
         assert 'PE32 executable (console) Intel 80386, for MS Windows' in file_str
     else:
-        assert 'Python script, ASCII text executable' in file_str
+        assert 'ASCII text executable' in file_str
