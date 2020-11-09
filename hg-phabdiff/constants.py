@@ -17,6 +17,4 @@ def EXE_HG():
     mercurial_files = subprocess.check_output([sys.executable, '-m', 'pip', 'show', '-f', 'mercurial']).splitlines()
     module_location = filter(lambda x: x.startswith('Location: '), mercurial_files)[0].split(': ')[1].strip()
     hg_path = filter(lambda x: x.endswith(hg_name), mercurial_files)[0].strip()
-    print(module_location)
-    print(hg_path)
     return os.path.abspath(os.path.join(module_location, hg_path))
