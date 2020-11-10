@@ -8,11 +8,18 @@ def ENVVAR_PHAB_DIFF():
     return "HG_PHAB_DIFF"
 
 
-def EXE_HG():
+def EXE_HG(sys_executable = sys.executable):
+    hg_names = [os.path.sep + "hg.exe", os.path.sep + "hg"]
     hg_full_path = ""
-    for hg_name in [os.path.sep + "hg.exe", os.path.sep + "hg"]:
+    for hg_name in hg_names:
+        if sys_executable.endswith(hg_name):
+            hg_full_path = os.path.abspath(sys_executable)
+    if hg_full_path:
+        return hg_full_path
+    for hg_name in hg_names:
         # importing pip is not supported by devs, they recommend this instead
-        mercurial_files = subprocess.check_output([sys.executable, "-m", "pip", "show", "-f", "mercurial"]).splitlines()
+        cmd = [sys_executable, "-m", "pip", "show", "-f", "mercurial"]
+        mercurial_files = subprocess.check_output(cmd).splitlines()
         module_location = filter(lambda x: x.startswith("Location: "), mercurial_files)[0].split(": ")[1].strip()
         hg_paths = filter(lambda x, name=hg_name: x.endswith(name), mercurial_files)
         if hg_paths:
