@@ -57,8 +57,7 @@ def test_apply_phab_diff(mocker, prepare_repos):
 
 def test_apply_no_diff(prepare_repos):
     (local, _, _) = prepare_repos
-    if ENVVAR_PHAB_DIFF() in os.environ:
-        os.environ.pop(ENVVAR_PHAB_DIFF())
+    os.environ.pop(ENVVAR_PHAB_DIFF(), None)
     plugin.apply_phab_diff(local)
 
 def test_hg_import_fail(mocker, prepare_repos):
