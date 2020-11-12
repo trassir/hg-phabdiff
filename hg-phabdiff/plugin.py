@@ -31,7 +31,10 @@ def apply_phab_diff(repo_root):
                 file_added_name = line[6:]
                 file_full_path = os.path.join(repo_root, file_added_name)
                 if os.path.isfile(file_full_path):
+                    print "removing garbage %s" % file_full_path
                     os.remove(file_full_path)
+                else:
+                    print "not finding garbage %s" % file_full_path
 
     p = subprocess.Popen(
         [
