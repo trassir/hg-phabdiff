@@ -76,3 +76,32 @@ def test_hg_import_fail(mocker, prepare_repos):
         plugin.apply_phab_diff(local)
     assert hg.current_commit() == commit_before
     assert hg.count_commits() == count_before
+
+
+def test_working_copy_has_untracked_file_from_diff(mocker, prepare_repos):
+    (local, patched, patch) = prepare_repos
+
+    def phabricatormock_factory():
+        return PhabricatorMock(diff=patch)
+
+    mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
+    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    hg = Hg(local)
+
+    # create untracked files that patch contains
+    # in working directory before applying patch
+    for root, dirs, files in os.walk(patched):
+        if ".hg" in root:
+            continue
+        for filename in files:
+            cmd = ["touch", os.path.join(root.replace(patched, local), filename)]
+            print "touching evil file %s" % cmd
+            subprocess.check_call(cmd)
+
+    # plugin must successfully apply patch regardless of untracked garbage
+    plugin.apply_phab_diff(local)
+    # patched repo should look same to mercurial as original one
+    hg.check_call("out", patched)
+    # files in working copy should be identical to original repo
+    diff = subprocess.check_output(["diff", "-x", ".hg", "-r", "-u", local, patched])
+    assert not diff
