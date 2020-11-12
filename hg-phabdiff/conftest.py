@@ -3,7 +3,6 @@
 
 import os
 import subprocess
-import hashlib
 import pytest
 from constants import EXE_HG
 

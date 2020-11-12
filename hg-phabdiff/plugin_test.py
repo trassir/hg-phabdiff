@@ -90,7 +90,7 @@ def test_working_copy_has_untracked_file_from_diff(mocker, prepare_repos):
 
     # create untracked files that patch contains
     # in working directory before applying patch
-    for root, dirs, files in os.walk(patched):
+    for root, _, files in os.walk(patched):
         if ".hg" in root:
             continue
         for filename in files:
