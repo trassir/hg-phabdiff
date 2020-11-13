@@ -55,7 +55,7 @@ def test_apply_phab_diff(mocker, prepare_repos):
     plugin.apply_phab_diff(local)
     # after patching, there should be no outgoing commits to "patched"
     hg.check_call("out", patched)
-    # after patching, working copies must be identical
+    # after patching, files in "local" working copy should be identical "patched" one
     diff = subprocess.check_output(["diff", "-x", ".hg", "-r", "-u", local, patched])
     assert not diff
 
