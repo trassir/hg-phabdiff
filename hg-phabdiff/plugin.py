@@ -19,10 +19,6 @@ def apply_phab_diff(repo_root):
     diff_id=os.environ[ENVVAR_PHAB_DIFF()]
     diff_txt = p.differential.getrawdiff(diffID=diff_id).response
 
-    print "----- DIFF -----"
-    print diff_txt
-    print "----- DIFF -----"
-
     # if diff adds files, then we have to make sure that
     # working copy has no interferring untracked remains
     # which will stop patch from being applied
@@ -35,10 +31,7 @@ def apply_phab_diff(repo_root):
                 file_added_name = line[6:]
                 file_full_path = os.path.join(repo_root, file_added_name)
                 if os.path.isfile(file_full_path):
-                    print "removing garbage %s" % file_full_path
                     os.remove(file_full_path)
-                else:
-                    print "not finding garbage %s" % file_full_path
 
     p = subprocess.Popen(
         [

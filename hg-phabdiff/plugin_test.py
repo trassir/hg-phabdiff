@@ -94,9 +94,7 @@ def test_working_copy_has_untracked_file_from_diff(mocker, prepare_repos):
         if ".hg" in root:
             continue
         for filename in files:
-            cmd = ["touch", os.path.join(root.replace(patched, local), filename)]
-            print "touching evil file %s" % cmd
-            subprocess.check_call(cmd)
+            subprocess.check_call(["touch", os.path.join(root.replace(patched, local), filename)])
 
     # plugin must successfully apply patch regardless of untracked garbage
     plugin.apply_phab_diff(local)
