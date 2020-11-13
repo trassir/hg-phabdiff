@@ -30,7 +30,7 @@ class Hg(object):
     def check_call(self, *args):
         return subprocess.check_call([EXE_HG(), "--cwd", self.repo_cwd] + list(args))
     def check_output(self, *args):
-        return subprocess.check_output([EXE_HG(), "--cwd", self.repo_cwd] + list(args))
+        return subprocess.check_output([EXE_HG(), "--cwd", self.repo_cwd] + list(args), stderr=None)
 
     def current_commit(self):
         return self.check_output('log', '-T', '{node}', '-r', '.')
@@ -101,9 +101,9 @@ def test_working_copy_has_untracked_file_from_diff(mocker, prepare_repos):
 
     # plugin must successfully apply patch regardless of untracked files
     plugin.apply_phab_diff(local)
-    # after patching, there should be no outgoing commits to "patched"
-    outgoing = hg.check_output("out", patched)
-    assert not outgoing
+    # after patching, there should be only one commit difference from "patched"
+    outgoing = hg.check_output("out", "--template", "{node}", "--quiet", patched)
+    assert len(outgoing.splitlines()) == 1
     # after patching, files in "local" working copy should be identical "patched" one
     diff = subprocess.check_output(["diff", "-x", ".hg", "-r", "-u", local, patched])
     assert not diff
