@@ -27,8 +27,6 @@ class PhabricatorMock(object):
 class Hg(object):
     def __init__(self, repo_cwd):
         self.repo_cwd = repo_cwd
-    def check_call(self, *args):
-        return subprocess.check_call([EXE_HG(), "--cwd", self.repo_cwd] + list(args))
     def check_output(self, *args):
         return subprocess.check_output([EXE_HG(), "--cwd", self.repo_cwd] + list(args))
 
