@@ -19,6 +19,10 @@ def apply_phab_diff(repo_root):
     diff_id=os.environ[ENVVAR_PHAB_DIFF()]
     diff_txt = p.differential.getrawdiff(diffID=diff_id).response
 
+    print "----- DIFF -----"
+    print diff_txt
+    print "----- DIFF -----"
+
     # if diff adds files, then we have to make sure that
     # working copy has no interferring untracked remains
     # which will stop patch from being applied
