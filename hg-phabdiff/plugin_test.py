@@ -102,7 +102,8 @@ def test_working_copy_has_untracked_file_from_diff(mocker, prepare_repos):
     # plugin must successfully apply patch regardless of untracked files
     plugin.apply_phab_diff(local)
     # after patching, there should be no outgoing commits to "patched"
-    hg.check_call("out", patched)
+    outgoing = hg.check_output("out", patched)
+    assert not outgoing
     # after patching, files in "local" working copy should be identical "patched" one
     diff = subprocess.check_output(["diff", "-x", ".hg", "-r", "-u", local, patched])
     assert not diff
