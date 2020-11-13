@@ -28,7 +28,7 @@ def apply_phab_diff(repo_root):
         if line.startswith("+++ ") and diff_lines:
             file_added_mark = diff_lines.pop()
             if file_added_mark == "--- /dev/null":
-                file_added_name = line[6:]
+                file_added_name = line[6:] # "+++ b/"
                 file_full_path = os.path.join(repo_root, file_added_name)
                 if os.path.isfile(file_full_path):
                     os.remove(file_full_path)
