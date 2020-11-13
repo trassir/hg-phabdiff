@@ -74,6 +74,10 @@ def test_apply_no_diff(prepare_repos):
     # since patch did not apply, "local" repository should stay intact
     assert hg.current_commit() == commit_before
     assert hg.count_commits() == count_before
+    # since patch did not apply, working copy should not have changes
+    diff = hg.check_output("diff", local)
+    assert not diff
+
 
 
 def test_hg_import_fail(mocker, prepare_repos):
@@ -97,3 +101,6 @@ def test_hg_import_fail(mocker, prepare_repos):
     # since there is no patch to apply, "local" repository should stay intact
     assert hg.current_commit() == commit_before
     assert hg.count_commits() == count_before
+    # since patch did not apply, working copy should not have changes
+    diff = hg.check_output("diff", local)
+    assert not diff
