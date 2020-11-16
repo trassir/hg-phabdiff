@@ -3,28 +3,33 @@
 
 import os
 import subprocess
-import hashlib
 import pytest
 from constants import EXE_HG
 
-def _hg_create_randomrepo(root, ncommits):
-    def _hg_commit(size):
+
+def _hg_create_randomrepo(root, nchanges):
+    def _hg_add_file(filename, size):
         text = open(__file__).read().decode("utf-8")
         filedata = unicode((text * (size / len(text) + 1))[:size])
         filedata += u'строка на русском'
         filedata += u'任何字符串在中國'
-        filedata_utf8 = filedata.encode("utf-8")
-        md5 = hashlib.md5()
-        md5.update(filedata_utf8)
-        filename = os.path.join(md5.hexdigest())
-        open(filename, "wb").write(filedata_utf8)
+        dirname = os.path.dirname(filename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        open(filename, "wb").write(filedata.encode("utf-8"))
         subprocess.check_call([EXE_HG(), "add", filename])
-        subprocess.check_call([EXE_HG(), "commit", "-m", "add %s" % filename, "-u", "testuser"])
     cd = os.curdir
     os.chdir("%s" % root)
     subprocess.check_call([EXE_HG(), "init"])
-    for i in xrange(1, ncommits):
-        _hg_commit(128 * i)
+    for c in xrange(1, nchanges + 1):
+        # this range ensures that current commit has
+        # tracked unmodified, newly created and modified files
+        for f in xrange((c - 1) ** 2 / 2, c ** 2):
+            file_name = "file-%s" % format(f, 'b')
+            file_dir = os.path.join(*list(format(f, 'b')[:3]))
+            file_size = 128 * f + 16 * c
+            _hg_add_file(os.path.join(file_dir, file_name), file_size)
+        subprocess.check_call([EXE_HG(), "commit", "-m", "update #%s" % c, "-u", "testuser"])
     os.chdir(cd)
 
 
@@ -34,6 +39,6 @@ def prepare_repos(tmpdir_factory):
     patched = ("%s" % tmpdir_factory.mktemp("patched")).replace("\\", "/")
     _hg_create_randomrepo(local, 5)
     subprocess.check_call([EXE_HG(), "clone", "--cwd", patched, local, "."])
-    patch = subprocess.check_output([EXE_HG(), "export", "--cwd", local, "-r", "head()"]).decode("utf-8")
+    patch = subprocess.check_output([EXE_HG(), "export", "--git", "--cwd", local, "-r", "head()"]).decode("utf-8")
     subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()", "--config", "extensions.strip="])
     return (local, patched, patch)
