@@ -16,8 +16,10 @@ def _hg_create_randomrepo(root, nchanges):
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
+        new_file = not os.path.exists(filename)
         open(filename, "wb").write(filedata.encode("utf-8"))
-        subprocess.check_call([EXE_HG(), "add", filename])
+        if new_file:
+            subprocess.check_call([EXE_HG(), "add", "--quiet", filename])
     cd = os.curdir
     os.chdir("%s" % root)
     subprocess.check_call([EXE_HG(), "init"])
@@ -36,9 +38,9 @@ def _hg_create_randomrepo(root, nchanges):
 @pytest.fixture(scope='function')
 def prepare_repos(tmpdir_factory):
     local = ("%s" % tmpdir_factory.mktemp("local")).replace("\\", "/")
-    patched = ("%s" % tmpdir_factory.mktemp("patched")).replace("\\", "/")
+    original = ("%s" % tmpdir_factory.mktemp("original")).replace("\\", "/")
     _hg_create_randomrepo(local, 5)
-    subprocess.check_call([EXE_HG(), "clone", "--cwd", patched, local, "."])
+    subprocess.check_call([EXE_HG(), "clone", "--cwd", original, local, "."])
     patch = subprocess.check_output([EXE_HG(), "export", "--git", "--cwd", local, "-r", "head()"]).decode("utf-8")
     subprocess.check_call([EXE_HG(), "strip", "--cwd", local, "-r", "head()", "--config", "extensions.strip="])
-    return (local, patched, patch)
+    return (original, patch, local)
