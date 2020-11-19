@@ -1,2 +1,3 @@
 mercurial
 phabricator
+brotli==1.0.9 # either hg or phabricator needs this but does not install. hg-phabdiff fails without this.
