@@ -24,6 +24,7 @@ setuptools.setup(
     install_requires=[
         "mercurial>=5.1",
         "phabricator>=0.7.0",
+        "hexdump",
         "brotli==1.0.9", # either hg or phabricator needs this but does not install. hg-phabdiff fails without this.
         ]
 )

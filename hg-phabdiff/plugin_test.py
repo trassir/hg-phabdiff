@@ -113,6 +113,35 @@ def test_patch_has_no_diff_content(mocker, prepare_repos):
             plugin.apply_phab_diff(local)
 
 
+def test_not_ascii_characters_in_diff(mocker, prepare_repos):
+    """
+    Ensure that plugin can handle non-ascii content in patch without damaging repository
+    """
+    (local, _, _) = prepare_repos
+
+    def phabricatormock_factory():
+        diff_content = ""
+        for i in xrange(0,255):
+            diff_content += chr(i)
+        return PhabricatorMock(diff=diff_content)
+
+    mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
+    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    hg = Hg(local)
+
+    commit_before = hg.current_commit()
+    count_before = hg.count_commits()
+    # this call should fail, since patch has no diff content in it
+    with pytest.raises(UnicodeDecodeError, match="'ascii' codec can't decode byte"):
+        plugin.apply_phab_diff(local)
+    # since there is no patch to apply, "local" repository should stay intact
+    assert hg.current_commit() == commit_before
+    assert hg.count_commits() == count_before
+    # since patch did not apply, working copy should not have changes
+    diff = hg.check_output("diff", local)
+    assert not diff
+
+
 def test_working_copy_has_untracked_files_colliding_with_patch(mocker, prepare_repos):
     (original, patch, local) = prepare_repos
 
