@@ -7,6 +7,7 @@ import pytest
 from constants import ENVVAR_PHAB_DIFF
 from constants import EXE_HG
 
+
 class PhabricatorMock(object):
     class DifferentialMock(object):
         class RawDiffMock(object):
