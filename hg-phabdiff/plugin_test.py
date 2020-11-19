@@ -7,8 +7,6 @@ import pytest
 from constants import ENVVAR_PHAB_DIFF
 from constants import EXE_HG
 
-os.environ["PYTHONWARNINGS"] = "ignore:DEPRECATION::pip._internal.cli.base_command"
-
 class PhabricatorMock(object):
     class DifferentialMock(object):
         class RawDiffMock(object):
