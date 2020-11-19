@@ -7,6 +7,7 @@ import pytest
 from constants import ENVVAR_PHAB_DIFF
 from constants import EXE_HG
 
+os.environ["PYTHONWARNINGS"] = "ignore:DEPRECATION::pip._internal.cli.base_command"
 
 class PhabricatorMock(object):
     class DifferentialMock(object):
@@ -96,6 +97,35 @@ def test_hg_import_fail(mocker, prepare_repos):
     count_before = hg.count_commits()
     # this call should fail, since patch has no diff content in it
     with pytest.raises(RuntimeError, match='hg import failed.+stdin: no diffs found'):
+        plugin.apply_phab_diff(local)
+    # since there is no patch to apply, "local" repository should stay intact
+    assert hg.current_commit() == commit_before
+    assert hg.count_commits() == count_before
+    # since patch did not apply, working copy should not have changes
+    diff = hg.check_output("diff", local)
+    assert not diff
+
+
+def test_not_ascii_characters_in_diff(mocker, prepare_repos):
+    """
+    Ensure that plugin can handle non-diff content in patch without damaging repository
+    """
+    (local, _, _) = prepare_repos
+
+    def phabricatormock_factory():
+        diff_content = ""
+        for i in xrange(0,255):
+            diff_content += chr(i)
+        return PhabricatorMock(diff=diff_content)
+
+    mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
+    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    hg = Hg(local)
+
+    commit_before = hg.current_commit()
+    count_before = hg.count_commits()
+    # this call should fail, since patch has no diff content in it
+    with pytest.raises(UnicodeDecodeError, match="'ascii' codec can't decode byte"):
         plugin.apply_phab_diff(local)
     # since there is no patch to apply, "local" repository should stay intact
     assert hg.current_commit() == commit_before

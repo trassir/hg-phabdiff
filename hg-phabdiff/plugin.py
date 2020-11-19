@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+import hexdump
 from constants import EXE_HG
 from phabricator import Phabricator
 from constants import ENVVAR_PHAB_DIFF
@@ -42,7 +43,12 @@ def apply_phab_diff(repo_root):
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    _, stderr = p.communicate(diff_txt.encode("utf-8"))
+    try:
+        _, stderr = p.communicate(diff_txt.encode("utf-8"))
+    except UnicodeDecodeError:
+        print("UnicodeDecodeError error while sending diff to hg, diff dump:")
+        hexdump.hexdump(diff_txt)
+        raise
     import_ret = p.wait()
     if import_ret:
         raise RuntimeError("hg import failed: %s" % stderr)
