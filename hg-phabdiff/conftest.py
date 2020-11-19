@@ -21,7 +21,7 @@ def _hg_create_randomrepo(root, nchanges):
         if new_file:
             subprocess.check_call([EXE_HG(), "add", "--quiet", filename])
     cd = os.curdir
-    os.chdir("%s" % root)
+    os.chdir(str(root))
     subprocess.check_call([EXE_HG(), "init"])
     for c in xrange(1, nchanges + 1):
         # this range ensures that current commit has
@@ -37,8 +37,8 @@ def _hg_create_randomrepo(root, nchanges):
 
 @pytest.fixture(scope='function')
 def prepare_repos(tmpdir_factory):
-    local = ("%s" % tmpdir_factory.mktemp("local")).replace("\\", "/")
-    original = ("%s" % tmpdir_factory.mktemp("original")).replace("\\", "/")
+    local = str(tmpdir_factory.mktemp("local")).replace("\\", "/")
+    original = str(tmpdir_factory.mktemp("original")).replace("\\", "/")
     _hg_create_randomrepo(local, 5)
     subprocess.check_call([EXE_HG(), "clone", "--cwd", original, local, "."])
     patch = subprocess.check_output([EXE_HG(), "export", "--git", "--cwd", local, "-r", "head()"]).decode("utf-8")

@@ -6,6 +6,7 @@ import hexdump
 from constants import EXE_HG
 from phabricator import Phabricator
 from constants import ENVVAR_PHAB_DIFF
+from logger import log
 
 
 def phabricator_factory():  #pragma: no cover
@@ -46,8 +47,9 @@ def apply_phab_diff(repo_root):
     try:
         _, stderr = p.communicate(diff_txt.encode("utf-8"))
     except UnicodeDecodeError:
-        print("UnicodeDecodeError error while sending diff to hg, diff dump:")
-        hexdump.hexdump(diff_txt)
+        log("UnicodeDecodeError error while sending diff to hg, diff dump:")
+        for dump_line in hexdump.dumpgen(diff_txt):
+            log(dump_line)
         raise
     import_ret = p.wait()
     if import_ret:
