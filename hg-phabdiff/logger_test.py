@@ -3,8 +3,8 @@ from logger import log
 
 
 def test_log_print():
-    log("message")
+    log('message')
 
 
 def test_log_stream():
-    log("message", stdout)
+    log('message', stdout)

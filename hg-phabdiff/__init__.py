@@ -11,11 +11,11 @@ def _update_with_diff(orig, ui, repo, *args, **kwargs):  # pragma: no cover
     if orig_failed:
         return orig_failed
     repo_root = repo.url()
-    if repo_root.startswith("file:"):
+    if repo_root.startswith('file:'):
         repo_root = repo_root[5:]
     else:
         raise RuntimeError(
-            "could not figure out repo location from '%s'" % repo_root)
+            'could not figure out repo location from "%s"' % repo_root)
     try:
         apply_phab_diff(repo_root)
     except Exception as e:
@@ -24,4 +24,4 @@ def _update_with_diff(orig, ui, repo, *args, **kwargs):  # pragma: no cover
     return False
 
 def uisetup(_):  # pragma: no cover
-    extensions.wrapcommand(commands.table, "update", _update_with_diff)
+    extensions.wrapcommand(commands.table, 'update', _update_with_diff)

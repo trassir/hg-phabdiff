@@ -7,20 +7,23 @@ import pytest
 from constants import ENVVAR_PHAB_DIFF
 from constants import EXE_HG
 
+# pip fills logs with deprecation warnings about python 2.7 being obsolete
+os.environ['PYTHONWARNINGS'] = 'ignore:DEPRECATION::pip._internal.cli.base_command'
+
 
 class PhabricatorMock(object):
     class DifferentialMock(object):
         class RawDiffMock(object):
-            def __init__(self, diff = ""):
+            def __init__(self, diff = ''):
                 self.response = diff
-        def __init__(self, diff = ""):
+        def __init__(self, diff = ''):
             self.diff = diff
-        def getrawdiff(self, diffID = ""):
-            assert diffID == "test"
+        def getrawdiff(self, diffID = ''):
+            assert diffID == 'test'
             return self.RawDiffMock(diff = self.diff)
     def update_interfaces(self):
         pass
-    def __init__(self, diff = ""):
+    def __init__(self, diff = ''):
         self.differential = self.DifferentialMock(diff=diff)
 
 
@@ -28,7 +31,7 @@ class Hg(object):
     def __init__(self, repo_cwd):
         self.repo_cwd = repo_cwd
     def check_output(self, *args):
-        return subprocess.check_output([EXE_HG(), "--cwd", self.repo_cwd] + list(args), stderr=None)
+        return subprocess.check_output([EXE_HG(), '--cwd', self.repo_cwd] + list(args), stderr=None)
     def current_commit(self):
         return self.check_output('log', '-T', '{node}', '-r', '.')
     def count_commits(self):
@@ -42,14 +45,14 @@ class AssertRepositoryIntact(object):
         self.hg = Hg(self.repo)
         self.commit_before = self.hg.current_commit()
         self.count_before = self.hg.count_commits()
-        self.diff_before = self.hg.check_output("diff")
+        self.diff_before = self.hg.check_output('diff')
         return self
     def __exit__(self, exc_type, exc_value, exc_trace):
         if exc_value is not None:
             return False #pragma: no cover
         assert self.hg.current_commit() == self.commit_before
         assert self.hg.count_commits() == self.count_before
-        assert self.hg.check_output("diff") == self.diff_before
+        assert self.hg.check_output('diff') == self.diff_before
         return True
 
 
@@ -66,11 +69,11 @@ class AssertPatchAppliedCorrectly(object):
         if exc_value is not None:
             return False #pragma: no cover
         # after patching, there should be only one commit difference from original
-        outgoing = self.hg.check_output("out", "--template", "{node}", "--quiet",
+        outgoing = self.hg.check_output('out', '--template', '{node}', '--quiet',
                                    self.original_repo)
         assert len(outgoing.splitlines()) == 1
-        # after patching, files in "patched" working copy should be identical "original" one
-        diff = subprocess.check_output(["diff", "-x", ".hg", "-r", "-u",
+        # after patching, files in 'patched' working copy should be identical 'original' one
+        diff = subprocess.check_output(['diff', '-x', '.hg', '-r', '-u',
                                         self.patched_repo, self.original_repo])
         assert not diff
         return True
@@ -83,7 +86,7 @@ def test_apply_legitimate_patch_from_phab_diff(mocker, prepare_repos):
         return PhabricatorMock(diff=patch)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
 
     with AssertPatchAppliedCorrectly(original_repo = original, patched_repo = local):
         plugin.apply_phab_diff(local)
@@ -102,10 +105,10 @@ def test_patch_has_no_diff_content(mocker, prepare_repos):
     (_, _, local) = prepare_repos
 
     def phabricatormock_factory():
-        return PhabricatorMock(diff="not a diff content")
+        return PhabricatorMock(diff='not a diff content')
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
 
     with AssertRepositoryIntact(local):
         # this call should fail, since patch has no diff content in it
@@ -114,32 +117,21 @@ def test_patch_has_no_diff_content(mocker, prepare_repos):
 
 
 def test_not_ascii_characters_in_diff(mocker, prepare_repos):
-    """
-    Ensure that plugin can handle non-ascii content in patch without damaging repository
-    """
     (local, _, _) = prepare_repos
 
     def phabricatormock_factory():
-        diff_content = ""
+        diff_content = ''
         for i in xrange(0,255):
             diff_content += chr(i)
         return PhabricatorMock(diff=diff_content)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = "test"
-    hg = Hg(local)
+    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
 
-    commit_before = hg.current_commit()
-    count_before = hg.count_commits()
-    # this call should fail, since patch has no diff content in it
-    with pytest.raises(UnicodeDecodeError, match="'ascii' codec can't decode byte"):
-        plugin.apply_phab_diff(local)
-    # since there is no patch to apply, "local" repository should stay intact
-    assert hg.current_commit() == commit_before
-    assert hg.count_commits() == count_before
-    # since patch did not apply, working copy should not have changes
-    diff = hg.check_output("diff", local)
-    assert not diff
+    with AssertRepositoryIntact(local):
+        # this call should fail, since patch has non-ascii content in it
+        with pytest.raises(UnicodeDecodeError, match='\'ascii\' codec can\'t decode byte'):
+            plugin.apply_phab_diff(local)
 
 
 def test_working_copy_has_untracked_files_colliding_with_patch(mocker, prepare_repos):
@@ -149,15 +141,15 @@ def test_working_copy_has_untracked_files_colliding_with_patch(mocker, prepare_r
         return PhabricatorMock(diff=patch)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = "test"
+    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
 
-    # create untracked files in "local" working directory
+    # create untracked files in 'local' working directory
     # that will cause collision with patch
     for root, _, files in os.walk(original):
-        if ".hg" in root:
+        if '.hg' in root:
             continue
         for filename in files:
-            subprocess.check_call(["touch", os.path.join(root.replace(original, local), filename)])
+            subprocess.check_call(['touch', os.path.join(root.replace(original, local), filename)])
 
     with AssertPatchAppliedCorrectly(original_repo = original, patched_repo = local):
         plugin.apply_phab_diff(local)

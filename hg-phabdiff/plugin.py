@@ -6,6 +6,7 @@ import hexdump
 from constants import EXE_HG
 from phabricator import Phabricator
 from constants import ENVVAR_PHAB_DIFF
+from logger import log
 
 
 def phabricator_factory():  #pragma: no cover
@@ -26,38 +27,39 @@ def apply_phab_diff(repo_root):
     diff_lines = diff_txt.splitlines()
     while diff_lines:
         line = diff_lines.pop()
-        if line.startswith("+++ ") and diff_lines:
+        if line.startswith('+++ ') and diff_lines:
             file_added_mark = diff_lines.pop()
-            if file_added_mark == "--- /dev/null":
-                file_added_name = line[6:] # "+++ b/"
+            if file_added_mark == '--- /dev/null':
+                file_added_name = line[6:] # '+++ b/'
                 file_full_path = os.path.join(repo_root, file_added_name)
                 if os.path.isfile(file_full_path):
                     os.remove(file_full_path)
 
     p = subprocess.Popen(
         [
-            EXE_HG(), "import",
-            "--cwd", repo_root,
-            "--no-commit", "-"
+            EXE_HG(), 'import',
+            '--cwd', repo_root,
+            '--no-commit', '-'
         ],
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
     try:
-        _, stderr = p.communicate(diff_txt.encode("utf-8"))
+        _, stderr = p.communicate(diff_txt.encode('utf-8'))
     except UnicodeDecodeError:
-        print("UnicodeDecodeError error while sending diff to hg, diff dump:")
-        hexdump.hexdump(diff_txt)
+        log('UnicodeDecodeError error while sending diff to hg, diff dump:')
+        for dump_line in hexdump.dumpgen(diff_txt):
+            log(dump_line)
         raise
     import_ret = p.wait()
     if import_ret:
-        raise RuntimeError("hg import failed: %s" % stderr)
+        raise RuntimeError('hg import failed: %s' % stderr)
 
     subprocess.check_call(
         [
-            EXE_HG(), "commit",
-            "--cwd", repo_root,
-            "-m", "auto-applied diff %s" % os.environ[ENVVAR_PHAB_DIFF()],
-            "-u", "jenkins"
+            EXE_HG(), 'commit',
+            '--cwd', repo_root,
+            '-m', 'auto-applied diff %s' % os.environ[ENVVAR_PHAB_DIFF()],
+            '-u', 'jenkins'
         ]
     )
