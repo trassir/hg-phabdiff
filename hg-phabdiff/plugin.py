@@ -21,19 +21,8 @@ def apply_phab_diff(repo_root):
         return
     p = phabricator_factory()
     p.update_interfaces()
-    diff_id=os.environ[ENVVAR_PHAB_DIFF()]
+    diff_id = os.environ[ENVVAR_PHAB_DIFF()]
     diff_txt = p.differential.getrawdiff(diffID=diff_id).response
-
-    p = subprocess.Popen(
-        [
-            EXE_HG(), 'id', '--id', '-T', '{id}',
-            '--cwd', repo_root,
-        ],
-        stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    _, commit_id = p.communicate()
-    commit_id = commit_id.replace('+', '')
 
     # if diff adds, copies or renames files, then we have to make sure that
     # working copy has no interferring untracked remains
@@ -41,8 +30,7 @@ def apply_phab_diff(repo_root):
 
     # remove any files mentioned in diff
     diff_lines = diff_txt.splitlines()
-    while diff_lines:
-        line = diff_lines.pop()
+    for line in diff_lines:
         m = DIFF_GIT_HEADER_REGEX.match(line)
         if m:
             for f in m.groups():
@@ -52,10 +40,9 @@ def apply_phab_diff(repo_root):
     # restore tracked files to their original state
     subprocess.check_call(
         [
-            EXE_HG(), 'update',
+            EXE_HG(), 'revert',
             '--cwd', repo_root,
-            '--rev', commit_id,
-            '--clean'
+            '--all'
         ]
     )
 
