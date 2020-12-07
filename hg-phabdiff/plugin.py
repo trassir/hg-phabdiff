@@ -32,12 +32,8 @@ def apply_phab_diff(repo_root):
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    try:
-        _, commit_id = p.communicate()
-    except UnicodeDecodeError:
-        raise
-    if commit_id.endswith('+'):
-        commit_id = commit_id[:-1]
+    _, commit_id = p.communicate()
+    commit_id = commit_id.replace('+', '')
 
     # if diff adds, copies or renames files, then we have to make sure that
     # working copy has no interferring untracked remains
