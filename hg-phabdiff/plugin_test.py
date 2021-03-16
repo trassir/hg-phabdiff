@@ -13,18 +13,34 @@ os.environ['PYTHONWARNINGS'] = 'ignore:DEPRECATION::pip._internal.cli.base_comma
 
 class PhabricatorMock(object):
     class DifferentialMock(object):
+        class RevisionMock(object):
+            class RevisionMockResult(object):
+                def __init__(self, data):
+                    self.data = data
+            def search(self, **_):
+                return self.RevisionMockResult(
+                    data = [{'fields': {'title': 'Test title'}, 'id': 100500}])
+        class DiffMock(object):
+            class DiffMockResult(object):
+                def __init__(self, data):
+                    self.data = data
+            def search(self, **_):
+                return self.DiffMockResult(
+                    data = [{'fields': {'revisionPHID': 'PHID-1337'}}])
         class RawDiffMock(object):
-            def __init__(self, diff = ''):
-                self.response = diff
-        def __init__(self, diff = ''):
-            self.diff = diff
+            def __init__(self, rawdiff = ''):
+                self.response = rawdiff
+        def __init__(self, rawdiff = ''):
+            self.rawdiff = rawdiff
+            self.diff = self.DiffMock()
+            self.revision = self.RevisionMock()
         def getrawdiff(self, diffID = ''):
-            assert diffID == 'test'
-            return self.RawDiffMock(diff = self.diff)
+            assert diffID == '13371338'
+            return self.RawDiffMock(rawdiff = self.rawdiff)
     def update_interfaces(self):
         pass
     def __init__(self, diff = ''):
-        self.differential = self.DifferentialMock(diff=diff)
+        self.differential = self.DifferentialMock(rawdiff=diff)
 
 
 class Hg(object):
@@ -86,7 +102,7 @@ def test_apply_legitimate_patch_from_phab_diff(mocker, prepare_repos):
         return PhabricatorMock(diff=patch)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
+    os.environ[ENVVAR_PHAB_DIFF()] = '13371338'
 
     with AssertPatchAppliedCorrectly(original_repo = original, patched_repo = local):
         plugin.apply_phab_diff(local)
@@ -108,7 +124,7 @@ def test_patch_has_no_diff_content(mocker, prepare_repos):
         return PhabricatorMock(diff='not a diff content')
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
+    os.environ[ENVVAR_PHAB_DIFF()] = '13371338'
 
     with AssertRepositoryIntact(local):
         # this call should fail, since patch has no diff content in it
@@ -126,7 +142,7 @@ def test_not_ascii_characters_in_diff(mocker, prepare_repos):
         return PhabricatorMock(diff=diff_content)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
+    os.environ[ENVVAR_PHAB_DIFF()] = '13371338'
 
     with AssertRepositoryIntact(local):
         # this call should fail, since patch has non-ascii content in it
@@ -141,7 +157,7 @@ def test_working_copy_has_untracked_files_colliding_with_patch(mocker, prepare_r
         return PhabricatorMock(diff=patch)
 
     mocker.patch('plugin.phabricator_factory', side_effect=phabricatormock_factory)
-    os.environ[ENVVAR_PHAB_DIFF()] = 'test'
+    os.environ[ENVVAR_PHAB_DIFF()] = '13371338'
 
     # create untracked files in 'local' working directory
     # that will cause collision with patch

@@ -2,11 +2,11 @@
 
 import os
 import subprocess
-import hexdump
 import re
-from constants import EXE_HG
+import hexdump
 from phabricator import Phabricator
 from constants import ENVVAR_PHAB_DIFF
+from constants import EXE_HG
 from logger import log
 
 DIFF_GIT_HEADER_REGEX = re.compile('^diff --git a/(.*) b/(.*)$')
@@ -16,13 +16,25 @@ def phabricator_factory():  #pragma: no cover
     return Phabricator()
 
 
+def get_diff_from_phabricator():
+    phabricator = phabricator_factory()
+    phabricator.update_interfaces()
+    diff_id = os.environ[ENVVAR_PHAB_DIFF()]
+    diff_txt = phabricator.differential.getrawdiff(diffID=diff_id).response
+    phab_diff = phabricator.differential.diff.search(
+        constraints=dict(ids=[int(diff_id)]))
+    revision_phid = phab_diff.data[0]['fields']['revisionPHID']
+    phab_revision = phabricator.differential.revision.search(
+        constraints=dict(phids=[revision_phid]))
+    revision_title = phab_revision.data[0]['fields']['title']
+    revision_id = phab_revision.data[0]['id']
+    return diff_id, diff_txt, revision_id, revision_title
+
+
 def apply_phab_diff(repo_root):
     if ENVVAR_PHAB_DIFF() not in os.environ:
         return
-    p = phabricator_factory()
-    p.update_interfaces()
-    diff_id = os.environ[ENVVAR_PHAB_DIFF()]
-    diff_txt = p.differential.getrawdiff(diffID=diff_id).response
+    diff_id, diff_txt, revision_id, revision_title = get_diff_from_phabricator()
 
     # if diff adds, copies or renames files, then we have to make sure that
     # working copy has no interferring untracked remains
@@ -31,10 +43,10 @@ def apply_phab_diff(repo_root):
     # remove any files mentioned in diff
     diff_lines = diff_txt.splitlines()
     for line in diff_lines:
-        m = DIFF_GIT_HEADER_REGEX.match(line)
-        if m:
-            for f in m.groups():
-                file_path = os.path.join(repo_root, f)
+        match = DIFF_GIT_HEADER_REGEX.match(line)
+        if match:
+            for fpath in match.groups():
+                file_path = os.path.join(repo_root, fpath)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
     # restore tracked files to their original state
@@ -46,7 +58,7 @@ def apply_phab_diff(repo_root):
         ]
     )
 
-    p = subprocess.Popen(
+    process = subprocess.Popen(
         [
             EXE_HG(), 'import',
             '--cwd', repo_root,
@@ -56,21 +68,25 @@ def apply_phab_diff(repo_root):
         stderr=subprocess.PIPE,
     )
     try:
-        _, stderr = p.communicate(diff_txt.encode('utf-8'))
+        _, stderr = process.communicate(diff_txt.encode('utf-8'))
     except UnicodeDecodeError:
         log('UnicodeDecodeError error while sending diff to hg, diff dump:')
         for dump_line in hexdump.dumpgen(diff_txt):
             log(dump_line)
         raise
-    import_ret = p.wait()
-    if import_ret:
+
+    if process.wait():
         raise RuntimeError('hg import failed: %s' % stderr)
 
+    message = 'D{revision_id} (#{diff_id}) {revision_title}'.format(
+        revision_id=revision_id,
+        diff_id=diff_id,
+        revision_title=revision_title)
     subprocess.check_call(
         [
             EXE_HG(), 'commit',
             '--cwd', repo_root,
-            '-m', 'auto-applied diff %s' % os.environ[ENVVAR_PHAB_DIFF()],
+            '-m', message,
             '-u', 'jenkins'
         ]
     )
