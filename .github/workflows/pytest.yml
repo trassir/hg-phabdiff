@@ -32,7 +32,7 @@ jobs:
         pip install -r requirements.txt
     - name: Test with pytest
       run: |
-        pytest --cov=./ --cov-report=xml
+        pytest -vv --cov=./ --cov-report=xml
     - name: Report code coverage
       run: |
         codecov
