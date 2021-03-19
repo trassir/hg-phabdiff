@@ -1,4 +1,4 @@
-name: Prospector lint
+name: prospector
 
 on:
   pull_request:

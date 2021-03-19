@@ -1,4 +1,4 @@
-name: Python test and lint
+name: pytest
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   pytest:
-    name: Run tests on ${{ matrix.os }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
