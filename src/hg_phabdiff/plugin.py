@@ -5,9 +5,9 @@ import subprocess
 import re
 import hexdump
 from phabricator import Phabricator
-from constants import ENVVAR_PHAB_DIFF
-from constants import EXE_HG
-from logger import log
+from .constants import ENVVAR_PHAB_DIFF
+from .constants import EXE_HG
+from .logger import log
 
 DIFF_GIT_HEADER_REGEX = re.compile('^diff --git a/(.*) b/(.*)$')
 

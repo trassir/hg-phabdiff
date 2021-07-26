@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 import os
-import plugin
+from . import plugin
 import subprocess
 import pytest
 from constants import ENVVAR_PHAB_DIFF
@@ -137,7 +137,7 @@ def test_not_ascii_characters_in_diff(mocker, prepare_repos):
 
     def phabricatormock_factory():
         diff_content = ''
-        for i in xrange(0,255):
+        for i in range(0,255):
             diff_content += chr(i)
         return PhabricatorMock(diff=diff_content)
 

@@ -2,8 +2,8 @@
 
 from mercurial import extensions
 from mercurial import commands
-from plugin import apply_phab_diff
-from logger import log
+from .plugin import apply_phab_diff
+from .logger import log
 
 
 def _update_with_diff(orig, hgui, repo, *args, **kwargs):  # pragma: no cover
