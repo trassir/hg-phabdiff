@@ -12,17 +12,20 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/trassir/hg-phabdiff",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(where='src'),
+    # When your source code is in a subdirectory under the project root, e.g.
+    # `src/`, it is necessary to specify the `package_dir` argument.
+    package_dir={'': 'src'},
     license="GNU General Public License v3 (GPLv3)",
     classifiers=[
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers"
     ],
-    python_requires=">=2.7",
+    python_requires=">=3.6",
     install_requires=[
-        "mercurial>=5.1",
+        "mercurial>=5.8",
         "phabricator>=0.7.0",
         "hexdump",
         "brotli==1.0.9", # either hg or phabricator needs this but does not install. hg-phabdiff fails without this.
