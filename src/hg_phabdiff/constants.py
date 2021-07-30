@@ -1,3 +1,4 @@
+import functools
 import os
 import sys
 import subprocess
@@ -6,6 +7,7 @@ def ENVVAR_PHAB_DIFF():
     return 'HG_PHAB_DIFF'
 
 
+@functools.lru_cache(maxsize=None)
 def EXE_HG(sys_executable = sys.executable):
     hg_names = [os.path.sep + 'hg.exe', os.path.sep + 'hg']
     hg_full_path = ''
