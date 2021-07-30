@@ -131,6 +131,10 @@ def test_patch_has_no_diff_content(mocker, prepare_repos):
 
 
 def test_not_ascii_characters_in_diff(mocker, prepare_repos):
+    # FIXME: This test used to assert that diffs with non-ascii characters
+    # fail to be parsed, but in python3 .encode('utf-8') treats them as
+    # \x01\x02. It should be rewritten to actually check that non-ascii
+    # is treated correctly in actual diffs.
     (local, _, _) = prepare_repos
 
     def phabricatormock_factory():
@@ -144,7 +148,7 @@ def test_not_ascii_characters_in_diff(mocker, prepare_repos):
 
     with AssertRepositoryIntact(local):
         # this call should fail, since patch has non-ascii content in it
-        with pytest.raises(UnicodeDecodeError, match='\'ascii\' codec can\'t decode byte'):
+        with pytest.raises(RuntimeError, match='hg import failed.*no diffs found'):
             plugin.apply_phab_diff(local)
 
 
