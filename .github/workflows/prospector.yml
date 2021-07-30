@@ -2,26 +2,23 @@ name: prospector
 
 on:
   pull_request:
-    branches:
-      - master
   push:
-    branches:
-      - master
 
 jobs:
   prospector:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 2
+    - name: Set up Python 3
       uses: actions/setup-python@v2
       with:
-        python-version: 2.x
+        python-version: 3.6
+    # with newer versions of pip in python 3.6, `pip show` results in extra ../ in files paths
+    # downgrade pip to avoid it
     - name: Install dependencies
       run: |
-        pip install pytest
-        pip install prospector==1.2.0
-        pip install -r requirements.txt
+        pip install pip==18.1
+        pip install -r requirements.txt -r requirements-dev.txt -e .
     - name: Lint with prospector
       run: |
         prospector
