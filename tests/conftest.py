@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import subprocess
 import pytest
@@ -6,7 +8,9 @@ from hg_phabdiff.constants import EXE_HG
 
 def _hg_create_randomrepo(root, nchanges):
     def _hg_add_file(filename, size):
-        text = open(__file__).read()
+        # bytes and encode/decode here are mandatory - otherwise, windows errors
+        # with UnicodeDecodeError during either reading __file__ or writing filename
+        text = open(__file__, 'rb').read().decode()
         filedata = str((text * (size // len(text) + 1))[:size])
         filedata += 'строка на русском'
         filedata += '任何字符串在中國'
