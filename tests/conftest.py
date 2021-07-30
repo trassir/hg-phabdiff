@@ -6,8 +6,8 @@ from hg_phabdiff.constants import EXE_HG
 
 def _hg_create_randomrepo(root, nchanges):
     def _hg_add_file(filename, size):
-        text = open(__file__).read().decode('utf-8')
-        filedata = str((text * (size / len(text) + 1))[:size])
+        text = open(__file__).read()
+        filedata = str((text * (size // len(text) + 1))[:size])
         filedata += 'строка на русском'
         filedata += '任何字符串在中國'
         dirname = os.path.dirname(filename)
@@ -30,7 +30,7 @@ def _hg_create_randomrepo(root, nchanges):
             rename_list = []
         # this range ensures that current commit has
         # tracked unmodified, newly created and modified files
-        for f in range((c - 1) ** 2 / 2, c ** 2):
+        for f in range((c - 1) ** 2 // 2, c ** 2):
             file_name = 'file-%s' % format(f, 'b')
             file_dir = os.path.join(*list(format(f, 'b')[:3]))
             file_size = 128 * f + 16 * c

@@ -18,7 +18,7 @@ def EXE_HG(sys_executable = sys.executable):
     # running as python module
     # importing pip is not supported by devs, they recommend this instead
     cmd = [sys_executable, '-m', 'pip', 'show', '-f', 'mercurial']
-    mercurial_files = subprocess.check_output(cmd).splitlines()
+    mercurial_files = subprocess.check_output(cmd).decode().splitlines()
     module_location = [x for x in mercurial_files if x.startswith('Location: ')][0].split(': ')[1].strip()
     for hg_name in hg_names:
         hg_paths = [x for x in mercurial_files if x.endswith(hg_name)]

@@ -8,7 +8,7 @@ def test_hg_found_is_executable():
     assert os.path.isfile(hg_exe_full_path)
     assert os.path.exists(hg_exe_full_path)
     file_str = subprocess.check_output(['file', hg_exe_full_path])
-    assert 'executable' in file_str
+    assert b'executable' in file_str
 
 
 def test_hg_findable_from_sys_executable():

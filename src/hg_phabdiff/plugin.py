@@ -68,13 +68,13 @@ def apply_phab_diff(repo_root):
     try:
         _, stderr = process.communicate(diff_txt.encode('utf-8'))
     except UnicodeDecodeError:
-        log('UnicodeDecodeError error while sending diff to hg, diff dump:')
+        log('UnicodeDecodeError error while sending diff to hg, diff dump:', None)
         for dump_line in hexdump.dumpgen(diff_txt):
-            log(dump_line)
+            log(dump_line, None)
         raise
 
     if process.wait():
-        raise RuntimeError('hg import failed: %s' % stderr)
+        raise RuntimeError('hg import failed: {}'.format(stderr.decode()))
 
     message = 'D{revision_id} (#{diff_id}) {revision_title}'.format(
         revision_id=revision_id,
