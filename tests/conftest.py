@@ -1,10 +1,7 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
 import os
 import subprocess
 import pytest
-from constants import EXE_HG
+from hg_phabdiff.constants import EXE_HG
 
 
 def _hg_create_randomrepo(root, nchanges):

@@ -1,5 +1,5 @@
 from sys import stdout
-from logger import log
+from hg_phabdiff.logger import log
 
 
 def test_log_print():

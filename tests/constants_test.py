@@ -1,8 +1,6 @@
-#!/usr/bin/env python2
-
 import os
 import subprocess
-from constants import EXE_HG
+from hg_phabdiff.constants import EXE_HG
 
 
 def test_hg_found_is_executable():

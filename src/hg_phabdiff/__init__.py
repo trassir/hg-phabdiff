@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 from mercurial import extensions
 from mercurial import commands
 from .plugin import apply_phab_diff
