@@ -1,18 +1,19 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import os
 import subprocess
 import pytest
-from constants import EXE_HG
+from hg_phabdiff.constants import EXE_HG
 
 
 def _hg_create_randomrepo(root, nchanges):
     def _hg_add_file(filename, size):
-        text = open(__file__).read().decode('utf-8')
-        filedata = unicode((text * (size / len(text) + 1))[:size])
-        filedata += u'строка на русском'
-        filedata += u'任何字符串在中國'
+        # bytes and encode/decode here are mandatory - otherwise, windows errors
+        # with UnicodeDecodeError during either reading __file__ or writing filename
+        text = open(__file__, 'rb').read().decode()
+        filedata = str((text * (size // len(text) + 1))[:size])
+        filedata += 'строка на русском'
+        filedata += '任何字符串在中國'
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -24,7 +25,7 @@ def _hg_create_randomrepo(root, nchanges):
     os.chdir(str(root))
     subprocess.check_call([EXE_HG(), 'init'])
     rename_list = []
-    for c in xrange(1, nchanges + 1):
+    for c in range(1, nchanges + 1):
         if len(rename_list) > 1:
             # have some files "copied" in commit
             subprocess.check_call([EXE_HG(), 'cp', rename_list[-1], rename_list[-1] + '-copied'])
@@ -33,7 +34,7 @@ def _hg_create_randomrepo(root, nchanges):
             rename_list = []
         # this range ensures that current commit has
         # tracked unmodified, newly created and modified files
-        for f in xrange((c - 1) ** 2 / 2, c ** 2):
+        for f in range((c - 1) ** 2 // 2, c ** 2):
             file_name = 'file-%s' % format(f, 'b')
             file_dir = os.path.join(*list(format(f, 'b')[:3]))
             file_size = 128 * f + 16 * c

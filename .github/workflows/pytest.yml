@@ -2,11 +2,7 @@ name: pytest
 
 on:
   pull_request:
-    branches:
-      - master
   push:
-    branches:
-      - master
 
 jobs:
   pytest:
@@ -15,24 +11,22 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_version: [2.x]
+        python_version: [3.6]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python_version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python_version }}
+    # with newer versions of pip in python 3.6, `pip show` results in extra ../ in files paths
+    # downgrade pip to avoid it
     - name: Install dependencies
       run: |
-        pip install pytest
-        pip install pytest-cov
-        pip install pytest-mock
-        pip install requests
-        pip install codecov
-        pip install -r requirements.txt
+        pip install pip==18.1
+        pip install -r requirements.txt -r requirements-test.txt -e .
     - name: Test with pytest
       run: |
-        pytest -vv --cov=./ --cov-report=xml
+        pytest -n logical -vv --cov=./ --cov-report=xml
     - name: Report code coverage
       run: |
         codecov

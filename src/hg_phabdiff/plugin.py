@@ -1,13 +1,11 @@
-#!/usr/bin/env python2
-
 import os
 import subprocess
 import re
 import hexdump
 from phabricator import Phabricator
-from constants import ENVVAR_PHAB_DIFF
-from constants import EXE_HG
-from logger import log
+from .constants import ENVVAR_PHAB_DIFF
+from .constants import EXE_HG
+from .logger import log
 
 DIFF_GIT_HEADER_REGEX = re.compile('^diff --git a/(.*) b/(.*)$')
 
@@ -70,13 +68,13 @@ def apply_phab_diff(repo_root):
     try:
         _, stderr = process.communicate(diff_txt.encode('utf-8'))
     except UnicodeDecodeError:
-        log('UnicodeDecodeError error while sending diff to hg, diff dump:')
+        log('UnicodeDecodeError error while sending diff to hg, diff dump:', None)
         for dump_line in hexdump.dumpgen(diff_txt):
-            log(dump_line)
+            log(dump_line, None)
         raise
 
     if process.wait():
-        raise RuntimeError('hg import failed: %s' % stderr)
+        raise RuntimeError('hg import failed: {}'.format(stderr.decode()))
 
     message = 'D{revision_id} (#{diff_id}) {revision_title}'.format(
         revision_id=revision_id,
