@@ -20,7 +20,7 @@ def _hg_create_randomrepo(root, nchanges):
         new_file = not os.path.exists(filename)
         open(filename, 'wb').write(filedata.encode('utf-8'))
         if new_file:
-            subprocess.check_call([EXE_HG(), 'add', '--quiet', filename])
+            subprocess.check_call([EXE_HG(), 'add', '--quiet', filename], shell=True)
     cd = os.curdir
     os.chdir(str(root))
     subprocess.check_call([EXE_HG(), 'init'])
@@ -28,9 +28,9 @@ def _hg_create_randomrepo(root, nchanges):
     for c in range(1, nchanges + 1):
         if len(rename_list) > 1:
             # have some files "copied" in commit
-            subprocess.check_call([EXE_HG(), 'cp', rename_list[-1], rename_list[-1] + '-copied'])
+            subprocess.check_call([EXE_HG(), 'cp', rename_list[-1], rename_list[-1] + '-copied'], shell=True)
             # have some files "renamed" in commit
-            subprocess.check_call([EXE_HG(), 'mv', rename_list[0], rename_list[0] + '-renamed'])
+            subprocess.check_call([EXE_HG(), 'mv', rename_list[0], rename_list[0] + '-renamed'], shell=True)
             rename_list = []
         # this range ensures that current commit has
         # tracked unmodified, newly created and modified files
@@ -41,7 +41,7 @@ def _hg_create_randomrepo(root, nchanges):
             file_path = os.path.join(file_dir, file_name)
             _hg_add_file(file_path, file_size)
             rename_list.append(file_path)
-        subprocess.check_call([EXE_HG(), 'commit', '-m', 'update #%s' % c, '-u', 'testuser'])
+        subprocess.check_call([EXE_HG(), 'commit', '-m', 'update #%s' % c, '-u', 'testuser'], shell=True)
     os.chdir(cd)
 
 
@@ -50,7 +50,7 @@ def prepare_repos(tmpdir_factory):
     local = str(tmpdir_factory.mktemp('local')).replace('\\', '/')
     original = str(tmpdir_factory.mktemp('original')).replace('\\', '/')
     _hg_create_randomrepo(local, 5)
-    subprocess.check_call([EXE_HG(), 'clone', '--cwd', original, local, '.'])
-    patch = subprocess.check_output([EXE_HG(), 'export', '--git', '--cwd', local, '-r', 'head()']).decode('utf-8')
-    subprocess.check_call([EXE_HG(), 'strip', '--cwd', local, '-r', 'head()', '--config', 'extensions.strip='])
+    subprocess.check_call([EXE_HG(), 'clone', '--cwd', original, local, '.'], shell=True)
+    patch = subprocess.check_output([EXE_HG(), 'export', '--git', '--cwd', local, '-r', 'head()'], shell=True).decode('utf-8')
+    subprocess.check_call([EXE_HG(), 'strip', '--cwd', local, '-r', 'head()', '--config', 'extensions.strip='], shell=True)
     return (original, patch, local)

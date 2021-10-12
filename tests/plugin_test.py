@@ -45,7 +45,7 @@ class Hg(object):
     def __init__(self, repo_cwd):
         self.repo_cwd = repo_cwd
     def check_output(self, *args):
-        return subprocess.check_output([EXE_HG(), '--cwd', self.repo_cwd] + list(args), stderr=None)
+        return subprocess.check_output([EXE_HG(), '--cwd', self.repo_cwd] + list(args), stderr=None, shell=True)
     def current_commit(self):
         return self.check_output('log', '-T', '{node}', '-r', '.')
     def count_commits(self):

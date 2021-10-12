@@ -53,7 +53,7 @@ def apply_phab_diff(repo_root):
             EXE_HG(), 'revert',
             '--cwd', repo_root,
             '--all'
-        ]
+        ], shell=True
     )
 
     process = subprocess.Popen(
@@ -64,6 +64,7 @@ def apply_phab_diff(repo_root):
         ],
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        shell=True
     )
     try:
         _, stderr = process.communicate(diff_txt.encode('utf-8'))
@@ -86,5 +87,5 @@ def apply_phab_diff(repo_root):
             '--cwd', repo_root,
             '-m', message,
             '-u', 'jenkins'
-        ]
+        ], shell=True
     )
