@@ -11,7 +11,9 @@ DIFF_GIT_HEADER_REGEX = re.compile('^diff --git a/(.*) b/(.*)$')
 
 
 def phabricator_factory():  #pragma: no cover
-    return Phabricator()
+    # Default 5 second timeout is not enough to aplly larger diffs.
+    # Our phabricator basically limits diff download speed to 1Mb/s
+    return Phabricator(timeout=120)
 
 
 def get_diff_from_phabricator():
