@@ -1,1 +1,31 @@
+astroid==2.3.3
+# Brotli==1.0.9  is frozen in setup.py already
+# certifi==2021.10.8 should actually be updated just in case of https problems
+charset-normalizer==2.0.10
+dodgy==0.2.1
+hexdump==3.3
+idna==3.3
+isort==4.3.21
+lazy-object-proxy==1.4.3
+mccabe==0.6.1
+# mercurial==6.0.1 want to be notified about problems with newer versions
+pep8-naming==0.4.1
+# phabricator==0.8.1 same as with mercurial
 prospector==1.2.0
+pycodestyle==2.4.0
+pydocstyle==6.1.1
+pyflakes==2.1.1
+pylint==2.4.4
+pylint-celery==0.3
+pylint-django==2.0.12
+pylint-flask==0.6
+pylint-plugin-utils==0.7
+PyYAML==6.0
+requests==2.27.1
+requirements-detector==0.7
+setoptconf==0.3.0
+six==1.16.0
+snowballstemmer==2.2.0
+typed-ast==1.4.3
+urllib3==1.26.8
+wrapt==1.11.2

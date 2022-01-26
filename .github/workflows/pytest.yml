@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pip==18.1
-        pip install -r requirements.txt -r requirements-test.txt -e .
+        pip install -r requirements-test.txt -e .
     - name: Test with pytest
       run: |
         pytest -n logical -vv --cov=./ --cov-report=xml
